@@ -13,7 +13,7 @@ package.domain = org.test
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,wav
+source.include_exts = py,png,jpg,kv,atlas,wav,ttf,txt
 
 # (list) Source files to exclude (let empty to not exclude anything)
 #source.exclude_exts = spec
@@ -35,10 +35,10 @@ version.filename = %(source.dir)s/main.py
 requirements = kivy
 
 # (str) Presplash of the application
-#presplash.filename = %(source.dir)s/media/tira1.jpg
+presplash.filename = %(source.dir)s/media/splash.png
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/media/abir.png
+icon.filename = %(source.dir)s/media/hero.png
 
 # (str) Supported orientation (one of landscape, portrait or all)
 orientation = all

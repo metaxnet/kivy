@@ -1,1 +1,34 @@
-on_pause
+X1. on_pause
+2. new mini-games:
+   a. one-hit baddies (to allow using numbers like 3 * 13) -> maybe a bubbles/space invasion/obstacle course game
+   b. baddy approaches/hits/lives (to encourage using big numbers)
+   c. multiple hits to baddy (if you see 30, use 2,3,5 simultaneously)
+   d. calculate number of needed hits (if number was 72, create by 8 * 9, number of hits is 5)
+   e. show hit-numbers as different weapons / heroes / attack moves
+   f. beating a baddy adds a new weapons / hero / move
+X3. neutralize/hide buttons when not needed
+4. keep hi-score
+5. tutorial/intro
+X6. splashscreen
+7. potions allowing addition of substraction of 1 (when baddy is prime number)
+8. scoring based on number used (7 / 9 / 8 / 6 / 4 / 3 / 5 / 2)
+9. RotatedImage:
+   Xa. variable label position
+   b. animation in range
+X10. baddy numbers in range (allowing prime numbers based on potions)
+11. calculate baddy size reduction ratio dynamically
+12. hint player for minimal and maximal number of hits needed
+13. Challenges:
+    a. minimum score
+    b. time
+    c. one good hit / two ...
+    d. remove some of the numbers
+    e. remove largest number
+14. decrease load time by splitting construction
+X15. "look alive" method to RotateIamge to enliven static situations
+X16. on_rotate to fix display
+X17. avoid tree stretching
+18. load media for next level on waits...
+X19. fix reset button
+20. special effect when using potions, special effect to emphasize score
+21. load textures into dic to speed up scrolling
