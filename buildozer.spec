@@ -1,10 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = My Knight
+title = DivideAndConquer
 
 # (str) Package name
-package.name = myknight
+package.name = divideandconquer
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.test
@@ -35,13 +35,13 @@ version.filename = %(source.dir)s/main.py
 requirements = kivy
 
 # (str) Presplash of the application
-presplash.filename = %(source.dir)s/media/splash.png
+presplash.filename = %(source.dir)s/media/splash.9.png
 
 # (str) Icon of the application
 icon.filename = %(source.dir)s/media/hero.png
 
 # (str) Supported orientation (one of landscape, portrait or all)
-orientation = all
+orientation = landscape
 
 # (bool) Indicate if the application should be fullscreen or not
 fullscreen = 1
@@ -130,7 +130,7 @@ fullscreen = 1
 [buildozer]
 
 # (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
-log_level = 1
+log_level = 2
 
 
 # -----------------------------------------------------------------------------
@@ -145,7 +145,7 @@ log_level = 1
 #     source.exclude_patterns = license,data/audio/*.wav,data/images/original/*
 #
 # This can be translated into:
-#
+#sudo add-apt-repository ppa:kivy-team/kivy
 #     [app:source.exclude_patterns]
 #     license
 #     data/audio/*.wav
