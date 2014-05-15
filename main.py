@@ -327,9 +327,9 @@ class GameView(ScreenManager):
                 self.start_battle()
             else:
                 self.schedule(self.start_battle, 2)
-        self.graphics_widget.add_widget(self.button_reset)
-        self.graphics_widget.add_widget(self.progress_bar)
-        self.graphics_widget.add_widget(self.image_score)
+            self.graphics_widget.add_widget(self.button_reset)
+            self.graphics_widget.add_widget(self.progress_bar)
+            self.graphics_widget.add_widget(self.image_score)
         
     def repeat_battle(self, dt=None):
         self.image_hero = None
