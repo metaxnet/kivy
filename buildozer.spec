@@ -35,10 +35,10 @@ version.filename = %(source.dir)s/main.py
 requirements = kivy
 
 # (str) Presplash of the application
-presplash.filename = %(source.dir)s/media/splash.9.png
+presplash.filename = %(source.dir)s/media/splash.png
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/media/hero.png
+icon.filename = %(source.dir)s/media/icon.png
 
 # (str) Supported orientation (one of landscape, portrait or all)
 orientation = landscape

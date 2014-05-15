@@ -170,7 +170,7 @@ Builder.load_string('''
         allow_stretch: True
     Label:
         text: self.parent.label_text
-        font_size: (self.parent.font_size + 0.0) / self.parent.screen_density
+        font_size: (self.parent.font_size + 0.0)
         y: self.parent.y - 25
         x: self.parent.x + (self.parent.width / 8) / self.parent.screen_ratio
 ''')
@@ -210,12 +210,13 @@ class GameView(ScreenManager):
         super(GameView, self).__init__(transition=WipeTransition())
         self.app = app
         self.graphics_widget = FloatLayout()
-        image = Image(source = PATH + "splash.9.png", keep_ratio=False, allow_stretch=True,\
+        image = Image(source = PATH + "splash.png", keep_ratio=False, allow_stretch=True,\
                size=(SCREEN_WIDTH, SCREEN_HEIGHT), size_hint=(None, None), pos=(0,0))
         self.graphics_widget.add_widget(image)
         screen = Screen(name="0")
         screen.add_widget(self.graphics_widget)
         self.add_widget(screen)
+        self.current = "0"
         #
         self.load_sounds()
         self.load_textures()
@@ -740,7 +741,7 @@ class GameView(ScreenManager):
 
     def load_textures(self):
         self.textures = {}
-        for f in ["splash.9", "bg_1", "bg_2", "bg_3", "bg_4", "bg_5", "bg_6", "bg_7", "bg_8", "bg_9", "hill_01", "hill_02", "ground", "cloud", "blue", "night"]:
+        for f in ["splash", "bg_1", "bg_2", "bg_3", "bg_4", "bg_5", "bg_6", "bg_7", "bg_8", "bg_9", "hill_01", "hill_02", "ground", "cloud", "blue", "night"]:
             self.textures[f] = CoreImage(PATH+f+".png")
 
     def load_sprites(self):
