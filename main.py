@@ -329,6 +329,8 @@ class GameView(ScreenManager):
             self.graphics_widget = graphics_widget
             self.add_widget(screen)
             self.current=screen.name
+            self.level_score = 0
+            self.image_score.set_score(self.level_score)
             if self.level < 3:
                 self.start_battle()
             else:
@@ -339,11 +341,11 @@ class GameView(ScreenManager):
         
     def repeat_battle(self, dt=None):
         self.image_hero = None
+        self.level_score = 0
+        self.image_score.set_score(self.level_score)
         self.start_battle()
 
     def start_battle(self, dt=None):
-        self.level_score = 0
-        self.image_score.set_score(self.level_score)
         self.attacks_tried = 0
         if self.level_potions:
             self.create_potions(self.level_potions)
@@ -437,13 +439,14 @@ class GameView(ScreenManager):
     
     def show_gems(self, dt=None, dummy=None):
         self.gem_scatters = []
+        filler = (9 - len(self.weapons)) / 2.0
         for i in range(len(self.weapons)):
             gem = self.gems[self.weapons[i]]
             scatter = Scatter(do_rotation=False, do_scale=False, color=(0,0,0,0), size_hint=(0.1,0.1))
             scatter.add_widget(gem)
             gem.bind(on_touch_down=self.flash_hero)            
             scatter.bind(on_touch_up=self.drop_gem)
-            scatter.pos = ((i) * X_BLOCK, 0)
+            scatter.pos = ((filler + i) * X_BLOCK, 0)
             scatter.scale = 1
             try:
                 self.graphics_widget.add_widget(scatter)
