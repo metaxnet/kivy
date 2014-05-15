@@ -34,14 +34,17 @@ import kivy.metrics
 import kivy.core.window
 
 __version__ = '1.0'
-print kivy.metrics.Metrics.density
-print kivy.metrics.Metrics.dpi
-SCREEN_DENSITY = kivy.metrics.Metrics.density
+#print kivy.metrics.Metrics.density
+#print kivy.metrics.Metrics.dpi
+SCREEN_DENSITY = kivy.metrics.Metrics.density + 0.0
 SCREEN_WIDTH = kivy.metrics.dp(Window.size[0]) / kivy.metrics.Metrics.density
 SCREEN_HEIGHT = kivy.metrics.dp(Window.size[1]) / kivy.metrics.Metrics.density
 Y_BLOCK = SCREEN_HEIGHT / 6
 X_BLOCK = SCREEN_WIDTH / 8
 SCREEN_RATIO = (SCREEN_WIDTH + 0.0) / (SCREEN_HEIGHT + 0.0)
+
+print "SCREEN_DENSITY: %f\nSCREEN_WIDTH: %f\nSCREEN_HEIGHT: %f\nSCREEN_RATIO: %f\nX_BLOCK: %f: Y_BLOCK: %f" %\
+       (SCREEN_DENSITY,SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_RATIO,X_BLOCK,Y_BLOCK)
 
 from kivy.lang import Builder
 Builder.load_string('''
@@ -68,6 +71,7 @@ Builder.load_string('''
     canvas.after:
         PopMatrix
     Label:
+        font_size: self.parent.font_size
         y: root.center_y + root.label_deltay
         x: root.center_x + root.label_deltax
         size: min(self.size)*0.1, min(self.size)*0.1
@@ -83,6 +87,7 @@ class MyImage(Image):
     label_deltay = NumericProperty(-5)
     shadow_opacity = NumericProperty(0.8)
     highlight_opacity = NumericProperty(0)
+    font_size = NumericProperty(15)
     
     def set_shadow(self, shadow_on):
         if shadow_on:
@@ -170,9 +175,9 @@ Builder.load_string('''
         allow_stretch: True
     Label:
         text: self.parent.label_text
-        font_size: (self.parent.font_size + 0.0)
+        font_size: self.parent.font_size
         y: self.parent.y - 25
-        x: self.parent.x + (self.parent.width / 8) / self.parent.screen_ratio
+        x: self.parent.x + self.parent.width / 10.0
 ''')
 
 class MyButton(Button):
@@ -400,11 +405,11 @@ class GameView(ScreenManager):
             self.gem_values[n] = n
             
     def drop_gem(self, widget=None, event=None):
-        #widget.child.set_highlight(False)
         if widget not in self.graphics_widget.children:
             return True
-        if widget.x > self.scatter_hero.x and widget.x < self.scatter_hero.x + self.image_hero.width * SCREEN_DENSITY:
-            if widget.y > self.scatter_hero.y and widget.y < self.scatter_hero.y + self.image_hero.height * SCREEN_DENSITY:
+
+        if widget.x > self.scatter_hero.x and widget.x < self.scatter_hero.x + self.image_hero.width * 2:
+            if widget.y > self.scatter_hero.y and widget.y < self.scatter_hero.y + self.image_hero.height * 2:
                 self.image_hero.stop_flash()
                 try:
                     self.graphics_widget.remove_widget(widget)
@@ -438,8 +443,8 @@ class GameView(ScreenManager):
             scatter.add_widget(gem)
             gem.bind(on_touch_down=self.flash_hero)            
             scatter.bind(on_touch_up=self.drop_gem)
-            scatter.pos = ((i) * X_BLOCK, Y_BLOCK / 2)
-            scatter.scale = 0.5 * SCREEN_DENSITY
+            scatter.pos = ((i) * X_BLOCK, 0)
+            scatter.scale = 1
             try:
                 self.graphics_widget.add_widget(scatter)
                 self.gem_scatters.append(scatter)
@@ -515,7 +520,7 @@ class GameView(ScreenManager):
         self.baddy_size = [X_BLOCK, Y_BLOCK]
         self.baddy_step = (4 * X_BLOCK + 0.0) / self.maximum_attacks
 
-        self.scatter_baddy.scale = self.baddy_size_ratio
+        self.scatter_baddy.scale = self.baddy_size_ratio # * SCREEN_DENSITY
         self.scatter_baddy.pos = (8 * X_BLOCK, Y_BLOCK)
         self.graphics_widget.add_widget(self.scatter_baddy)
         self.image_baddy.walk(30, 60)
@@ -560,7 +565,7 @@ class GameView(ScreenManager):
         Clock.unschedule(self.image_hero.look_alive)
         Clock.unschedule(self.image_baddy.look_alive)
         #
-        widget.pos = (X_BLOCK / (4.0 * (SCREEN_DENSITY **2) * SCREEN_RATIO ), X_BLOCK / (6 * (SCREEN_DENSITY**2) * SCREEN_RATIO) )
+        widget.pos = (X_BLOCK / (20.0 * (SCREEN_DENSITY **2) * SCREEN_RATIO ), Y_BLOCK / (16 * (SCREEN_DENSITY**2) * SCREEN_RATIO) )
         #
         widget.scale = 0.3
         widget.add_widget(image)
@@ -755,10 +760,10 @@ class GameView(ScreenManager):
             product = product * random.choice(numbers)
         return product
         
-    def is_prime(self, num):
-        if divide(num):
-            return False
-        return True
+    #def is_prime(self, num):
+    #    if divide(num):
+    #        return False
+    #    return True
 
     def is_impossible(self, num):
         for weapon in self.weapons:
@@ -766,19 +771,19 @@ class GameView(ScreenManager):
                 return False
         return True
 
-    def divide(self, num):
-        div = 2
-        current = num
-        dividers = []
-        while div <= current and div <= num / 2 and current > 1:
-            if current % div == 0:
-                dividers.append(div)
-                current = current / div
-            else:
-                div = div + 1
-        return dividers
+    #def divide(self, num):
+    #    div = 2
+    #    current = num
+    #    dividers = []
+    #    while div <= current and div <= num / 2 and current > 1:
+    #        if current % div == 0:
+    #            dividers.append(div)
+    #            current = current / div
+    #        else:
+    #            div = div + 1
+    #    return dividers
 
-class KnightApp(App):
+class DivideAndConquerApp(App):
     def build(self):
         view = GameView(self)
         return view
@@ -798,4 +803,4 @@ class KnightApp(App):
 
         
 if __name__ == '__main__':
-    KnightApp().run()
+    DivideAndConquerApp().run()
