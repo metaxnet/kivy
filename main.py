@@ -34,7 +34,8 @@ import kivy.metrics
 import kivy.core.window
 
 __version__ = '1.0'
-
+print kivy.metrics.Metrics.density
+print kivy.metrics.Metrics.dpi
 SCREEN_DENSITY = kivy.metrics.Metrics.density
 SCREEN_WIDTH = kivy.metrics.dp(Window.size[0]) / kivy.metrics.Metrics.density
 SCREEN_HEIGHT = kivy.metrics.dp(Window.size[1]) / kivy.metrics.Metrics.density
@@ -163,15 +164,15 @@ Builder.load_string('''
     Image:
         source: self.parent.source
         y: self.parent.y
-        x: self.parent.x - 10
+        x: self.parent.x
         width: self.parent.width
         height: self.parent.height
         allow_stretch: True
     Label:
         text: self.parent.label_text
-        font_size: self.parent.font_size
+        font_size: (self.parent.font_size + 0.0) / self.parent.screen_density
         y: self.parent.y - 25
-        x: self.parent.x - 20
+        x: self.parent.x + (self.parent.width / 8) / self.parent.screen_ratio
 ''')
 
 class MyButton(Button):
@@ -179,6 +180,8 @@ class MyButton(Button):
     source = StringProperty()
     label_text = StringProperty()
     font_size = NumericProperty(15)
+    screen_ratio = NumericProperty(SCREEN_RATIO)
+    screen_density = NumericProperty(SCREEN_DENSITY)
                 
 class MySound():
     def __init__(self, core_sound):
@@ -230,12 +233,12 @@ class GameView(ScreenManager):
         self.image_score.size_hint = (.2, .2)
         self.image_score.pos_hint = {'x':.8, 'y':.8}
         #
-        self.button_reset = MyButton(source=PATH + "restart.png", on_press=self.reset,\
+        self.button_reset = MyButton(source=PATH + "restart.png", on_press=self.reset, opacity=0.5,\
                        background_color = (0,0,0,0), size = (X_BLOCK, Y_BLOCK), border=(0,0,0,0))
         self.button_reset.size_hint = (.1, .1)
         self.button_reset.pos_hint = {'x': 0, 'y':.9}
         
-        self.progress_bar = ProgressBar(max=500, opacity=0.5)
+        self.progress_bar = ProgressBar(max=500, opacity=0) #CURRENTLY HIDDEN
         with self.progress_bar.canvas:
             Color(0,0,0,0)
         self.progress_bar.size_hint = (.6, .05)
@@ -306,6 +309,7 @@ class GameView(ScreenManager):
             image = Image(source = PATH + "end.png", keep_ratio=False, allow_stretch=True,\
                size=(SCREEN_WIDTH, SCREEN_HEIGHT), size_hint=(None, None), pos=(0,0))
             graphics_widget.add_widget(image)
+            graphics_widget.add_widget(self.button_reset)
             screen = Screen(name="end")
             screen.add_widget(graphics_widget)
             self.add_widget(screen)
@@ -323,12 +327,12 @@ class GameView(ScreenManager):
                 self.start_battle()
             else:
                 self.schedule(self.start_battle, 2)
+        self.graphics_widget.add_widget(self.button_reset)
+        self.graphics_widget.add_widget(self.progress_bar)
+        self.graphics_widget.add_widget(self.image_score)
         
     def repeat_battle(self, dt=None):
         self.image_hero = None
-        self.graphics_widget.remove_widget(self.button_reset)
-        self.graphics_widget.remove_widget(self.image_score)
-        self.graphics_widget.remove_widget(self.progress_bar)
         self.start_battle()
 
     def start_battle(self, dt=None):
@@ -345,7 +349,10 @@ class GameView(ScreenManager):
         if self.level < 3:
             min_wait = 0
         self.schedule(self.introduce_hero, min_wait)
-        self.schedule(self.introduce_baddy, min_wait + 3)
+        if self.level == 1:
+            self.schedule(self.introduce_baddy, min_wait)
+        else:
+            self.schedule(self.introduce_baddy, min_wait + 2)
         self.schedule(self.talk_baddy, min_wait + 4)
         self.schedule(self.talk_hero, min_wait + 5.5)
         self.schedule(self.talk_baddy, min_wait + 6.5)
@@ -369,9 +376,6 @@ class GameView(ScreenManager):
         self.image_hero.flash(10)
         
     def handle_timed_battle(self, dt=None):
-        self.graphics_widget.add_widget(self.button_reset)
-        self.graphics_widget.add_widget(self.progress_bar)
-        self.graphics_widget.add_widget(self.image_score)
         if self.time_limit > 0:
             anim1 = Animation(x = X_BLOCK, duration=self.time_limit)
             anim1.bind(on_complete = self.level_failed)
@@ -481,7 +485,7 @@ class GameView(ScreenManager):
         self.image_hero.set_shadow(True)
         self.scatter_hero = Scatter(do_rotation=False, do_scale=False, do_translation=False)
         self.scatter_hero.add_widget(self.image_hero)
-        self.scatter_hero.scale= 2 * SCREEN_DENSITY
+        self.scatter_hero.scale= 2 + (0.5 * SCREEN_DENSITY)
         if self.level < 3:
             self.hero_position = [X_BLOCK, Y_BLOCK]
             self.scatter_hero.pos = (self.hero_position[0], self.hero_position[1])
@@ -525,7 +529,7 @@ class GameView(ScreenManager):
             button = MyButton(source=PATH + "potion.png",background_color=[0,0,0,0], label_text="-1", font_size = 30)
             self.potion_buttons.append(button)
             self.potion_button_values.append(n)
-            button.pos_hint = {'x': .2,'y': .6}
+            button.pos_hint = {'x': .45,'y': .85}
             button.size_hint = (0.12, 0.12)
             button.bind(on_press=self.handle_potion)
             
@@ -554,8 +558,9 @@ class GameView(ScreenManager):
 
         Clock.unschedule(self.image_hero.look_alive)
         Clock.unschedule(self.image_baddy.look_alive)
-        
-        widget.pos = (self.image_hero.x + self.image_hero.width / 4.0, self.image_hero.y + self.image_hero.height / 6.0) #(0,0) #((-SCREEN_WIDTH / 25) * SCREEN_RATIO , - SCREEN_HEIGHT / 18)
+        #
+        widget.pos = (X_BLOCK / (4.0 * (SCREEN_DENSITY **2) * SCREEN_RATIO ), X_BLOCK / (6 * (SCREEN_DENSITY**2) * SCREEN_RATIO) )
+        #
         widget.scale = 0.3
         widget.add_widget(image)
         self.current_gem = widget
