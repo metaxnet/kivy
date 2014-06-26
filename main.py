@@ -62,11 +62,11 @@ Builder.load_string('''
             size: (self.size[0], self.size[1])
             pos: (self.pos[0]+7, self.pos[1])
         Color: 
-            rgba: (.9,.9,.9, root.highlight_opacity)
+            rgba: (.9,.1,.1, root.highlight_opacity)
         Rectangle: 
             source: self.source
-            size: (self.size[0]+12, self.size[1]+12)
-            pos: (self.pos[0]-6, self.pos[1]-6)
+            size: (self.size[0]+2, self.size[1]+2)
+            pos: (self.pos[0]-1, self.pos[1]-1)
         
     canvas.after:
         PopMatrix
@@ -225,7 +225,7 @@ class GameView(ScreenManager):
         #
         self.load_sounds()
         self.load_textures()
-        self.load_sprites()
+        #self.load_sprites()
         self.load_gems()
         #
         self.schedules = []
@@ -302,9 +302,9 @@ class GameView(ScreenManager):
         self.baddy_label_deltay = int(data[8])
         self.level_potions = [int(x) for x in data[9].split(",") if x]
         self.textures_data = data[10].split(";")
-        self.sprites_data = data[11].split(";")
-        if self.sprites_data == ['']:
-            self.sprites_data = []
+        #self.sprites_data = data[11].split(";")
+        #if self.sprites_data == ['']:
+        #    self.sprites_data = []
         
     def setup_battle(self, dt=None):
         self.graphics_widget.remove_widget(self.button_reset)
@@ -329,12 +329,15 @@ class GameView(ScreenManager):
             self.graphics_widget = graphics_widget
             self.add_widget(screen)
             self.current=screen.name
-            self.level_score = 0
+            if self.score_threshold > 0:
+                self.level_score = - self.score_threshold
+            else:
+                self.level_score = 0
             self.image_score.set_score(self.level_score)
             if self.level < 3:
                 self.start_battle()
             else:
-                self.schedule(self.start_battle, 2)
+                self.schedule(self.start_battle, 0) #WAS 2
             self.graphics_widget.add_widget(self.button_reset)
             self.graphics_widget.add_widget(self.progress_bar)
             self.graphics_widget.add_widget(self.image_score)
@@ -347,13 +350,14 @@ class GameView(ScreenManager):
 
     def start_battle(self, dt=None):
         self.attacks_tried = 0
+        self._picked_gems = []
         if self.level_potions:
             self.create_potions(self.level_potions)
         else:
             self.potion_buttons = []
         self.create_gems(self.weapons)
         #
-        min_wait = 3
+        min_wait = 0 #WAS 3
         if self.level < 3:
             min_wait = 0
         self.schedule(self.introduce_hero, min_wait)
@@ -368,6 +372,8 @@ class GameView(ScreenManager):
             self.schedule(self.show_gems, 0)
         else:
             self.schedule(self.show_gems, min_wait + 8)
+        if self.score_threshold > 0:
+            self.image_score.flash(10)
         self.schedule(self.show_potions, min_wait + 8)
         self.schedule(self.look_alive, min_wait + 8)
         self.schedule(self.handle_timed_battle, min_wait + 8)
@@ -413,10 +419,6 @@ class GameView(ScreenManager):
         if widget.x > self.scatter_hero.x and widget.x < self.scatter_hero.x + self.image_hero.width * 2:
             if widget.y > self.scatter_hero.y and widget.y < self.scatter_hero.y + self.image_hero.height * 2:
                 self.image_hero.stop_flash()
-                try:
-                    self.graphics_widget.remove_widget(widget)
-                except:
-                    pass
                 self.handle_player_action(widget)
                 return True
             else:
@@ -430,6 +432,10 @@ class GameView(ScreenManager):
             self.hide_potions()
             self.show_potions()
         return False
+        
+    def pick_gem(self, widget=None, event=None):
+        self._picked_gems.append(widget)
+        self.flash_hero()
 
     def hide_gems(self, dt=None, dummy=None):
         for scatter in self.gem_scatters:
@@ -439,7 +445,7 @@ class GameView(ScreenManager):
     
     def show_gems(self, dt=None, dummy=None):
         self.gem_scatters = []
-        filler = (9 - len(self.weapons)) / 2.0
+        filler = (8 - len(self.weapons)) / 2.0
         for i in range(len(self.weapons)):
             gem = self.gems[self.weapons[i]]
             scatter = Scatter(do_rotation=False, do_scale=False, color=(0,0,0,0), size_hint=(0.1,0.1))
@@ -474,17 +480,17 @@ class GameView(ScreenManager):
             scatter.add_widget(image)
             graphics_widget.add_widget(scatter)
 
-        for td in self.sprites_data:
-            filename,xpos,ypos,width,height = td.split(":")
-            xpos = float(xpos)
-            ypos = float(ypos)
-            image = MyImage(texture = self.sprites[filename].texture, keep_ratio=True, allow_stretch=False)
-            image.set_shadow(False)
-            scatter = Scatter(do_rotation=False, do_scale=False, do_translation=False)
-            scatter.pos = (xpos * X_BLOCK, (ypos + 4) * Y_BLOCK / 2)
-            scatter.add_widget(image)
-            graphics_widget.add_widget(scatter)
-            scatter.scale = 6 -  ypos * 1.5
+        #for td in self.sprites_data:
+        #    filename,xpos,ypos,width,height = td.split(":")
+        #    xpos = float(xpos)
+        #    ypos = float(ypos)
+        #    image = MyImage(texture = self.sprites[filename].texture, keep_ratio=True, allow_stretch=False)
+        #    image.set_shadow(False)
+        #    scatter = Scatter(do_rotation=False, do_scale=False, do_translation=False)
+        #    scatter.pos = (xpos * X_BLOCK, (ypos + 4) * Y_BLOCK / 2)
+        #    scatter.add_widget(image)
+        #    graphics_widget.add_widget(scatter)
+        #    scatter.scale = 6 -  ypos * 1.5
 
         return graphics_widget
 
@@ -562,6 +568,12 @@ class GameView(ScreenManager):
         self.decide_next_stage()
         
     def handle_player_action(self, widget=None):
+        # HANDLE MULTIPLE WIDGETS USING self._PICKED_GEMS AND THEN CLEAR IT!
+        try:
+            self.graphics_widget.remove_widget(widget)
+        except:
+            pass
+
         image = widget.children[-1]
         self.hide_gems()
 
@@ -614,7 +626,9 @@ class GameView(ScreenManager):
         anim1 = Animation(size = (1,1))
         anim1.start(self.image_baddy)        
         self.hide_gems()
-        if self.level_score < self.score_threshold:
+        if self.level_score < 0:
+            print "NOTIFY USER ABOUT THRESHOLD!"
+            self.image_score.flash(10)
             self.schedule(self.level_failed, 2)
         else:
             self.schedule(self.move_to_next_battle, 2)
@@ -623,7 +637,7 @@ class GameView(ScreenManager):
         self.graphics_widget.remove_widget(self.progress_bar)
         Animation.cancel_all(self.progress_bar)
         Animation.cancel_all(self.scatter_baddy, 'x')
-        if self.baddy_points < 2:
+        if self.baddy_points < 2 and self.level_score >= self.score_threshold:
             return
         self.hide_gems()
         anim = Animation(x = - 4 * X_BLOCK, duration = 2)
@@ -699,6 +713,9 @@ class GameView(ScreenManager):
             self.hero_celebrate()
         else:
             self.baddy_celebrate()
+            
+        if self.level_score < 0:
+            self.image_score.flash(10)
         
         anim4.bind(on_complete = self.decide_next_stage)
 
@@ -749,13 +766,13 @@ class GameView(ScreenManager):
 
     def load_textures(self):
         self.textures = {}
-        for f in ["splash", "bg_1", "bg_2", "bg_3", "bg_4", "bg_5", "bg_6", "bg_7", "bg_8", "bg_9", "hill_01", "hill_02", "ground", "cloud", "blue", "night"]:
+        for f in ["splash", "bg_1", "bg_2", "bg_3", "bg_4", "bg_5", "bg_6", "bg_7", "bg_8", "bg_9"]:
             self.textures[f] = CoreImage(PATH+f+".png")
 
-    def load_sprites(self):
-        self.sprites = {}
-        for f in ["tree_green","tree_red","tree_yellow", "castle", "moon"]:
-            self.sprites[f] = CoreImage(PATH+f+".png")
+    #def load_sprites(self):
+    #    self.sprites = {}
+    #    for f in ["tree_green","tree_red","tree_yellow", "castle", "moon"]:
+    #        self.sprites[f] = CoreImage(PATH+f+".png")
        
     def calc_baddy_points(self, numbers, n_multiplications):
         product = 1
